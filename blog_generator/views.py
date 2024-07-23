@@ -23,20 +23,16 @@ def generate_blog(request):
         try:
             data = json.loads(request.body)
             youtubeLink = data['link']
-            print("youtubeLink: ",youtubeLink)
         except (KeyError, json.JSONDecodeError):
             return JsonResponse({'error': 'Invalid data sent'}, status=400)
         # get yt title
         title = youtubeTitle(youtubeLink)
-        print("title: ",title)
         # get transcript
         transcription = get_transcription(youtubeLink)
-        print("transcription: ",transcription)
         if not transcription:
             return JsonResponse({'error': 'Failed to get transcript'}, status=500)
         # use OpenAI to generate the blog
         blog_content = generate_blog_from_transcription(transcription)
-        print("blog: ",blog_content)
         if not blog_content:
             return JsonResponse({'error': 'Failed to get blog content'},status=500)
         
@@ -59,32 +55,24 @@ def youtubeTitle(link):
 
 def download_audio(link):
     yt = YouTube(link)
-    print("yt: ",yt)
-    print("yt: ",yt.fmt_streams)
-    print("yt: ",yt.streaming_data)
-    print("yt: ",yt.streams)
     if not yt.streams:
         return JsonResponse({'error': 'There is no streams data'}, status=500)
     video = yt.streams.filter(only_audio=True).first()
-    print("video: ",video)
     out_file = video.download(output_path=settings.MEDIA_ROOT)
-    print("out_file: ",out_file)
     base, ext = os.path.splitext(out_file)
-    print("base: ",base)
-    print("ext: ",ext)
     new_file = base + '.mp3'
     os.rename(out_file, new_file)
     return new_file
 
 def get_transcription(link):
     audio_file = download_audio(link)
-    aai.settings.api_key = "1213268e34684428a4ca6d3c36813259"
+    # aai.settings.api_key = "1213268e34684428a4ca6d3c36813259"
     transcriber = aai.Transcriber()
     transcript = transcriber.transcribe(audio_file)
     return transcript.text
 
 def generate_blog_from_transcription(transcription):
-    openai.api_key = "sk-proj-ciUFbArHJ3f0TxErOAHeT3BlbkFJQU8OdzIxce6e7j3PT8Bq"
+    # openai.api_key = "sk-proj-ciUFbArHJ3f0TxErOAHeT3BlbkFJQU8OdzIxce6e7j3PT8Bq"
     prompt = f"Based on the following transcript from a Youtube video, write a comprehensive blog article, write it based on the transcript, but don't make it look like a youtube video, make it look like a proper blog article:\n\n{transcription}\n\nArticle:"
     response = openai.Completion.create(
         model="text-davinci-003",
