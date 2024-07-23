@@ -66,12 +66,13 @@ def download_audio(link):
 
 def get_transcription(link):
     audio_file = download_audio(link)
-    aai.settings.api_key = "your-assembly-ai-api-key"
+    aai.settings.api_key = "assemblyai-api-key"
     transcriber = aai.Transcriber()
     transcript = transcriber.transcribe(audio_file)
     return transcript.text
 
 def generate_blog_from_transcription(transcription):
+    openai.api_key = "openai-api-key"
     prompt = f"Based on the following transcript from a Youtube video, write a comprehensive blog article, write it based on the transcript, but don't make it look like a youtube video, make it look like a proper blog article:\n\n{transcription}\n\nArticle:"
     response = openai.Completion.create(
         model="text-davinci-003",
